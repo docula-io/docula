@@ -28,9 +28,9 @@ impl InitHandler for Handler {
     fn handle_cmd(&self, cmd: InitCmd) -> Result<(), Box<dyn Error>> {
         let mut state = crate::state::State::load()?;
 
-        println!("{:?}", state);
+        let cwd = std::env::current_dir()?;
 
-        let adr_path = state.path.clone().join(&cmd.dir);
+        let adr_path = cwd.join(&cmd.dir);
 
         if !adr_path.exists() {
             std::fs::create_dir_all(&adr_path)?;
@@ -38,9 +38,8 @@ impl InitHandler for Handler {
 
         let canon_path = adr_path.canonicalize()?;
 
-        println!("{:?}", canon_path);
-
         if !path_is_parent(&state.path, &canon_path) {
+            println!("{:?} {:?}", state.path, canon_path);
             return Err("path is not correct")?;
         }
 
@@ -72,5 +71,19 @@ fn path_is_parent(parent: &std::path::PathBuf, path: &std::path::PathBuf) -> boo
     match path.parent() {
         None => false,
         Some(x) => path_is_parent(parent, &x.to_path_buf()),
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_parent_path() {
+        let parent = std::path::Path::new("/tmp").to_path_buf();
+
+        let path = std::path::Path::new("/tmp/foo/bar").to_path_buf();
+        assert!(super::path_is_parent(&parent, &path));
+
+        let path = std::path::Path::new("/foo").to_path_buf();
+        assert!(!super::path_is_parent(&parent, &path));
     }
 }

@@ -9,18 +9,21 @@ pub struct State {
 }
 
 impl State {
-    pub fn load() -> Result<State, std::io::Error> {
+    pub fn load() -> Result<State, Box<dyn std::error::Error>> {
         let existing = find_state_path()?;
 
         if existing.is_none() {
-            return State::new()
+            return Ok(State::new()?);
         }
 
         let path = existing.unwrap();
 
         let contents = std::fs::read_to_string(&path)?;
 
-        let mut state: State = serde_yaml::from_str(&contents).unwrap();
+        let mut state: State = match serde_yaml::from_str(&contents) {
+            Ok(x) => x,
+            _ => State::new()?,
+        };
 
         state.path = path.parent().unwrap().to_path_buf();
 
@@ -43,8 +46,7 @@ impl State {
 }
 
 fn find_state_path() -> Result<Option<std::path::PathBuf>, std::io::Error> {
-    let path = std::env::current_dir()?;
-    check_path(&path)
+    check_path(&std::env::current_dir()?)
 }
 
 fn check_path(path: &std::path::Path) -> Result<Option<std::path::PathBuf>, std::io::Error> {
