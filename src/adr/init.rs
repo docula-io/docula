@@ -3,10 +3,11 @@ use std::error::Error;
 
 #[derive(Debug, Args)]
 pub struct InitCmd {
+    #[clap(help = "The directory where the adrs will live")]
     dir: std::path::PathBuf,
-    #[clap(short, long, value_parser)]
+    #[clap(short, long, value_parser, help = "The name of this adr directory")]
     name: String,
-    #[clap(short, long, value_enum)]
+    #[clap(short, long, value_enum, default_value="timestamp")]
     index_type: super::IndexType
 }
 
