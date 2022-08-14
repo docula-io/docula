@@ -51,6 +51,7 @@ impl InitHandler for Handler {
             path: relative_path,
             name: cmd.name,
             index: cmd.index_type,
+            full_path: canon_path,
         };
 
         state.adr.validate_dir(&dir)?;

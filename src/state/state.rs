@@ -27,13 +27,17 @@ impl State {
 
         state.path = path.parent().unwrap().to_path_buf();
 
+        state.adr.set_path(&state.path);
+
         Ok(state)
     }
 
     pub fn new() -> Result<State, std::io::Error> {
+        let path = std::env::current_dir()?;
+
         return Ok(State{
-            adr: adr::state::State::new(),
-            path: std::env::current_dir()?,
+            adr: adr::state::State::new(&path),
+            path,
         })
     }
 
