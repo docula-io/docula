@@ -1,6 +1,6 @@
 use clap::{Args, Subcommand};
 use std::error::Error;
-use super::{new,init};
+use super::{new, init, list};
 
 #[derive(Debug, Args)]
 #[clap(args_conflicts_with_subcommands = true)]
@@ -14,6 +14,7 @@ impl Adr {
         match self.command {
             Command::New(x) => x.handle(),
             Command::Init(x) => x.handle(init::Handler{}),
+            Command::List(x) => x.handle(),
         }
     }
 }
@@ -22,4 +23,5 @@ impl Adr {
 pub enum Command {
     New(new::NewCmd),
     Init(init::InitCmd),
+    List(list::ListArgs),
 }

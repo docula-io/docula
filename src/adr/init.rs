@@ -1,11 +1,13 @@
 use clap::Args;
 use std::error::Error;
+use super::Directory;
+use chrono::Utc;
 
 #[derive(Debug, Args)]
 pub struct InitCmd {
     #[clap(help = "The directory where the adrs will live")]
     dir: std::path::PathBuf,
-    #[clap(short, long, value_parser, help = "The name of this adr directory")]
+    #[clap(short, long, value_parser, help = "The name that will be given to the adr directory")]
     name: String,
     #[clap(short, long, value_enum, default_value="timestamp")]
     index_type: super::IndexType
@@ -21,8 +23,7 @@ pub trait InitHandler {
     fn handle_cmd(&self, cmd: InitCmd) -> Result<(), Box<dyn Error>>;
 }
 
-pub struct Handler {
-}
+pub struct Handler {}
 
 impl InitHandler for Handler {
     fn handle_cmd(&self, cmd: InitCmd) -> Result<(), Box<dyn Error>> {
@@ -47,7 +48,7 @@ impl InitHandler for Handler {
 
         let relative_path: std::path::PathBuf = canon_path.components().skip(parent_count).collect();
 
-        let dir = super::state::Directory{
+        let dir = Directory{
             path: relative_path,
             name: cmd.name,
             index: cmd.index_type,
@@ -56,11 +57,21 @@ impl InitHandler for Handler {
 
         state.adr.validate_dir(&dir)?;
 
-        state.adr.dirs.push(dir);
+        state.adr.dirs.push(dir.clone());
 
         state.save()?;
 
-        Ok(())
+        let date = Utc::now().date();
+        dir.create_adr(
+            "Record architecture decisions", 
+            date, super::Status::Accepted,
+            "We need to record the architectural decisions made on this project.",
+            "We will use Architecture Decision Records, managed by \
+            [Docula](https://github.com/docula-io/docula),\n\
+            as described by Michael Nygard in this article: \
+            http://thinkrelevance.com/blog/2011/11/15/documenting-architecture-decisions",
+            "See Michael Nygard's article, linked above.",
+        )
     }
 }
 
