@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 use std::error::Error;
 
 pub mod adr;
+pub mod markdown;
 pub mod state;
 
 #[derive(Debug, Parser)]
@@ -16,11 +17,13 @@ impl Cli {
     pub fn handle(self) -> Result<(), Box<dyn Error>> {
         match self.command {
             Commands::Adr(x) => x.handle(),
+            Commands::Markdown(x) => x.handle(),
         }
     }
 }
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
-    Adr(adr::command::Adr)
+    Adr(adr::command::Adr),
+    Markdown(markdown::command::Markdown),
 }
