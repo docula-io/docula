@@ -99,19 +99,19 @@ impl Directory {
     }
 
     fn get_seq_index(&self) -> Result<u32, Box<dyn std::error::Error>> {
-        let mut maxIndex = 0;
+        let mut max_index = 0;
 
         for x in self.full_path.read_dir()? {
             if let Ok(entry) = x {
                 if let Some(idx) = self.index_from_entry(entry) {
-                    if maxIndex < idx {
-                        maxIndex = idx
+                    if max_index < idx {
+                        max_index = idx
                     }
                 }
             }
         }
 
-        return Ok(maxIndex + 1)
+        return Ok(max_index + 1)
     }
 
     fn index_from_entry(&self, entry: std::fs::DirEntry) -> Option<u32> {
