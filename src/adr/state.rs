@@ -49,7 +49,6 @@ impl State {
         for dir in self.dirs.iter() {
             let fpath = self.path.join(&dir.path);
 
-            println!("{:?}", fpath);
             if cwd.eq(&fpath) {
                 return Ok(Some(dir))
             }

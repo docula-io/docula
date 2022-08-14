@@ -2,13 +2,16 @@ use inflector::Inflector;
 use chrono::{Date, NaiveDate ,Utc};
 use std::fmt;
 
+#[derive(Debug)]
 pub struct Adr {
     pub index: String,
     pub title: String,
     pub content: String,
     pub date: Option<chrono::Date<chrono::Utc>>,
+    pub status: Option<Status>,
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum Status {
     Accepted,
     Proposed
@@ -25,7 +28,7 @@ impl fmt::Display for Status {
 
 impl Adr {
     pub fn load(path: &std::path::PathBuf) -> Result<Option<Adr>, std::io::Error> {
-        let re: regex::Regex = regex::Regex::new(r"^(\d{5})-(.*)\.md$").unwrap();
+        let re: regex::Regex = regex::Regex::new(r"^(\d{5,14})-(.*)\.md$").unwrap();
 
         let fname = match filename_from_path(path) {
             None => return Ok(None),
@@ -56,11 +59,14 @@ impl Adr {
 
         let date = date_from_content(&content);
 
+        let status = status_from_content(&content);
+
         Ok(Some(Adr{
             index: index.to_owned(),
             content,
             title,
             date,
+            status,
         }))
     }
 }
@@ -97,4 +103,18 @@ fn date_from_content(content: &str) -> Option<Date<Utc>> {
     let date = NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").ok()?;
 
     Some(Date::<Utc>::from_utc(date, Utc))
+}
+
+fn status_from_content(content: &str) -> Option<Status> {
+    let re: regex::Regex = regex::Regex::new(r"## Status\s*(Proposed|Accepted)").unwrap();
+
+    let caps = re.captures(content)?;
+
+    let proposed_str = caps.get(1).map_or(None, |m| Some(m.as_str().trim()))?;
+
+    match proposed_str {
+        "Proposed" => Some(Status::Proposed),
+        "Accepted" => Some(Status::Accepted),
+        _ => None
+    }
 }

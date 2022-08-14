@@ -21,7 +21,10 @@ impl Adr {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
+    #[clap(help = "Creates a new ADR in the respective directory")]
     New(new::NewCmd),
+    #[clap(help = "Initializes a directory for use with ADRs")]
     Init(init::InitCmd),
+    #[clap(help = "Lists all ADRs in a directory")]
     List(list::ListArgs),
 }
