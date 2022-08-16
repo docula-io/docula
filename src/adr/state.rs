@@ -11,24 +11,24 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(path: &std::path::PathBuf) -> State {
-        return State{
+    pub fn new(path: std::path::PathBuf) -> State {
+        State{
             dirs: Vec::new(),
-            path: path.clone(),
+            path,
         }
     }
 
-    pub fn set_path(&mut self, path: &std::path::PathBuf) {
-        self.path = path.clone();
-
+    pub fn set_path(&mut self, path: std::path::PathBuf) {
         for dir in self.dirs.iter_mut() {
-            dir.full_path = path.clone().join(dir.path.clone())
+            dir.full_path = path.join(dir.path.clone())
         }
+
+        self.path = path
     }
 
     pub fn get_dir(&self, name: &Option<String>) -> Result<Option<&Directory>, Error> {
         match name {
-            Some(x) => self.get_named_dir(&x),
+            Some(x) => self.get_named_dir(x),
             None => self.get_current_dir(),
         }
     }

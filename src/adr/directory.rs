@@ -17,11 +17,9 @@ impl Directory {
     pub fn get_adrs(&self) -> Result<Vec<Adr>, Box<dyn std::error::Error>> {
         let mut res = Vec::new();
 
-        for x in self.full_path.read_dir()? {
-            if let Ok(entry) = x {
-                if let Some(adr) = Adr::load(&entry.path())? {
-                    res.push(adr)
-                }
+        for entry in self.full_path.read_dir()?.flatten() {
+            if let Some(adr) = Adr::load(&entry.path())? {
+                res.push(adr)
             }
         }
 
@@ -35,7 +33,7 @@ impl Directory {
         let index = self.next_index()?;
 
         let filename = format!(
-            "{}-{}.md", index, title.trim().replace(" ", "-").to_lowercase(),
+            "{}-{}.md", index, title.trim().replace(' ', "-").to_lowercase(),
         );
 
         if !self.full_path.exists() {
@@ -78,23 +76,21 @@ impl Directory {
     fn get_seq_index(&self) -> Result<u32, Box<dyn std::error::Error>> {
         let mut max_index = 0;
 
-        for x in self.full_path.read_dir()? {
-            if let Ok(entry) = x {
-                if let Some(idx) = self.index_from_entry(entry) {
-                    if max_index < idx {
-                        max_index = idx
-                    }
+        for entry in (self.full_path.read_dir()?).flatten() {
+            if let Some(idx) = self.index_from_entry(entry) {
+                if max_index < idx {
+                    max_index = idx
                 }
             }
         }
 
-        return Ok(max_index + 1)
+        Ok(max_index + 1)
     }
 
     fn index_from_entry(&self, entry: std::fs::DirEntry) -> Option<u32> {
         let adr = Adr::load(&entry.path()).ok()??;
         
-        match u32::from_str_radix(&adr.index, 10) {
+        match adr.index.parse::<u32>() {
             Ok(x) => Some(x),
             Err(_) => None,
         }

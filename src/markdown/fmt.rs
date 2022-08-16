@@ -17,7 +17,7 @@ impl FmtCmd {
             return self.scan_dir();
         }
 
-        match path.extension().map_or(None, |x| x.to_str()) {
+        match path.extension().and_then(|x| x.to_str()) {
             Some("md") => self.fmt_file(&path),
             _ => Err("invalid file")?,
         }
@@ -39,10 +39,9 @@ impl FmtCmd {
 
 fn fix_line_length(s: &str) -> String {
     let mut res = String::new();
-    let mut lines = s.lines();
     let mut in_code_block = false;
 
-    while let Some(line) = lines.next() {
+    for line in s.lines() {
         if line.starts_with("```") {
             in_code_block = !in_code_block;
         }
@@ -53,7 +52,7 @@ fn fix_line_length(s: &str) -> String {
             res.push_str(line);
         }
 
-        res.push_str("\n");
+        res.push('\n');
     }
 
     res
@@ -83,7 +82,7 @@ fn find_closest_space(line: &str, width: usize) -> Option<usize> {
     let mut offset: usize = 0;
     let mut search = line;
 
-    while let Some(x) = search.find(" ") {
+    while let Some(x) = search.find(' ') {
         let delta = (((width + 1) as isize) - (x + offset) as isize).unsigned_abs();
 
         best = match best {

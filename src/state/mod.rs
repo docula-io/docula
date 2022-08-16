@@ -1,3 +1,3 @@
-mod state;
+mod model;
 
-pub use state::State;
+pub use model::State;

@@ -27,7 +27,7 @@ impl State {
 
         state.path = path.parent().unwrap().to_path_buf();
 
-        state.adr.set_path(&state.path);
+        state.adr.set_path(state.path.clone());
 
         Ok(state)
     }
@@ -35,8 +35,8 @@ impl State {
     pub fn new() -> Result<State, std::io::Error> {
         let path = std::env::current_dir()?;
 
-        return Ok(State{
-            adr: adr::state::State::new(&path),
+        Ok(State{
+            adr: adr::state::State::new(path.clone()),
             path,
         })
     }

@@ -40,19 +40,19 @@ impl Adr {
             Some(x) => x,
         };
 
-        let index = match caps.get(1).map_or(None, |m| Some(m.as_str())) {
+        let index = match caps.get(1).map(|m| m.as_str()) {
             None => return Ok(None),
             Some(x) => x,
         };
 
         let content = std::fs::read_to_string(path)?;
 
-        let filename = match caps.get(2).map_or(None, |m| Some(m.as_str())) {
+        let filename = match caps.get(2).map(|m| m.as_str()) {
             None => return Ok(None),
             Some(x) => x,
         };
 
-        let title = match title_from_content(&content).or(title_from_filename(filename)) {
+        let title = match title_from_content(&content).or_else(|| title_from_filename(filename)) {
             None => return Ok(None),
             Some(x) => x,
         };
@@ -71,8 +71,8 @@ impl Adr {
     }
 }
 
-fn filename_from_path(path: &std::path::PathBuf) -> Option<&str> {
-    Some(path.file_name()?.to_str()?)
+fn filename_from_path(path: &std::path::Path) -> Option<&str> {
+    path.file_name()?.to_str()
 }
 
 fn title_from_content(content: &str) -> Option<String> {
@@ -80,11 +80,11 @@ fn title_from_content(content: &str) -> Option<String> {
 
     let caps = re.captures(content)?;
 
-    caps.get(1).map_or(None, |m| Some(m.as_str().trim().to_owned()))
+    caps.get(1).map(|m| m.as_str().trim().to_owned())
 }
 
 fn title_from_filename(filename: &str) -> Option<String> {
-    let rep = filename.replace("-", " ");
+    let rep = filename.replace('-', " ");
     let title = rep.trim();
 
     match title {
@@ -98,7 +98,7 @@ fn date_from_content(content: &str) -> Option<Date<Utc>> {
 
     let caps = re.captures(content)?;
 
-    let date_str = caps.get(1).map_or(None, |m| Some(m.as_str().trim().to_owned()))?;
+    let date_str = caps.get(1).map(|m| m.as_str().trim().to_owned())?;
 
     let date = NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").ok()?;
 
@@ -110,7 +110,7 @@ fn status_from_content(content: &str) -> Option<Status> {
 
     let caps = re.captures(content)?;
 
-    let proposed_str = caps.get(1).map_or(None, |m| Some(m.as_str().trim()))?;
+    let proposed_str = caps.get(1).map(|m| m.as_str().trim())?;
 
     match proposed_str {
         "Proposed" => Some(Status::Proposed),

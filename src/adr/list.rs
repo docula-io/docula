@@ -14,7 +14,7 @@ impl ListArgs {
     pub fn handle(self) -> Result<(), Box<dyn Error>> {
         let state = crate::state::State::load()?.adr;
 
-        if state.dirs.len() == 0 {
+        if state.dirs.is_empty() {
             Err("please set up an adr dir using the `init` command")?;
         }
 

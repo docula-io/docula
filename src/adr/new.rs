@@ -11,7 +11,7 @@ pub struct NewCmd {
 
 impl NewCmd {
     pub fn new(name: &str, dir: &str) -> NewCmd {
-        return NewCmd{
+        NewCmd{
             name: name.to_owned(),
             dir_name: Some(dir.to_owned()),
         }
@@ -20,7 +20,7 @@ impl NewCmd {
     pub fn handle(self) -> Result<(), Box<dyn Error>> {
         let state = crate::state::State::load()?.adr;
 
-        if state.dirs.len() == 0 {
+        if state.dirs.is_empty() {
             Err("please set up an adr dir using the `init` command")?;
         }
 

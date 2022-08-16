@@ -6,8 +6,8 @@ mod init;
 mod list;
 mod directory;
 mod indextype;
-mod adr;
+mod model;
 
 use indextype::IndexType;
 use directory::Directory;
-use adr::{Adr, Status};
+use model::{Adr, Status};
