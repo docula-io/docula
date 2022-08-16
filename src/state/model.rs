@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
 use crate::adr;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct State {
@@ -35,7 +35,7 @@ impl State {
     pub fn new() -> Result<State, std::io::Error> {
         let path = std::env::current_dir()?;
 
-        Ok(State{
+        Ok(State {
             adr: adr::state::State::new(path.clone()),
             path,
         })
@@ -60,7 +60,7 @@ fn check_path(path: &std::path::Path) -> Result<Option<std::path::PathBuf>, std:
     }
 
     if p.is_dir() {
-        return Err(std::io::Error::new(std::io::ErrorKind::Unsupported, ""))
+        return Err(std::io::Error::new(std::io::ErrorKind::Unsupported, ""));
     }
 
     match path.parent() {

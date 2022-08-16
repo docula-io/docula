@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
-use std::collections::HashSet;
-use std::io::{Error,ErrorKind};
 use super::Directory;
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
+use std::io::{Error, ErrorKind};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct State {
@@ -12,7 +12,7 @@ pub struct State {
 
 impl State {
     pub fn new(path: std::path::PathBuf) -> State {
-        State{
+        State {
             dirs: Vec::new(),
             path,
         }
@@ -36,7 +36,7 @@ impl State {
     fn get_named_dir(&self, name: &str) -> Result<Option<&Directory>, Error> {
         for dir in self.dirs.iter() {
             if dir.name == name {
-                return Ok(Some(dir))
+                return Ok(Some(dir));
             }
         }
 
@@ -50,12 +50,12 @@ impl State {
             let fpath = self.path.join(&dir.path);
 
             if cwd.eq(&fpath) {
-                return Ok(Some(dir))
+                return Ok(Some(dir));
             }
         }
 
         if self.dirs.len() == 1 {
-            return Ok(self.dirs.first())
+            return Ok(self.dirs.first());
         }
 
         Ok(None)

@@ -1,11 +1,12 @@
+mod fmt;
+
 use clap::{Args, Subcommand};
-use super::fmt::FmtCmd;
 
 #[derive(Debug, Args)]
 #[clap(args_conflicts_with_subcommands = true)]
 pub struct Markdown {
     #[clap(subcommand)]
-    command: Command
+    command: Command,
 }
 
 impl Markdown {
@@ -17,6 +18,6 @@ impl Markdown {
 }
 
 #[derive(Debug, Subcommand)]
-pub enum Command {
-    Fmt(FmtCmd)
+enum Command {
+    Fmt(fmt::FmtArgs),
 }

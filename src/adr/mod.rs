@@ -1,13 +1,10 @@
-pub mod command;
+pub mod handler;
 pub mod state;
 
-mod new;
-mod init;
-mod list;
 mod directory;
 mod indextype;
 mod model;
 
-use indextype::IndexType;
 use directory::Directory;
+pub use indextype::IndexType;
 use model::{Adr, Status};

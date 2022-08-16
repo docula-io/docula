@@ -1,7 +1,8 @@
-use clap::{Parser, Subcommand};
+use clap::Parser;
 use std::error::Error;
 
 pub mod adr;
+mod command;
 pub mod markdown;
 pub mod state;
 
@@ -10,20 +11,11 @@ pub mod state;
 #[clap(about = "An all in one toolbox for managing Documentation as Code", long_about=None)]
 pub struct Cli {
     #[clap(subcommand)]
-    command: Commands,
+    command: command::Command,
 }
 
 impl Cli {
     pub fn handle(self) -> Result<(), Box<dyn Error>> {
-        match self.command {
-            Commands::Adr(x) => x.handle(),
-            Commands::Markdown(x) => x.handle(),
-        }
+        self.command.handle()
     }
-}
-
-#[derive(Debug, Subcommand)]
-pub enum Commands {
-    Adr(adr::command::Adr),
-    Markdown(markdown::command::Markdown),
 }

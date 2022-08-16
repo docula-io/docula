@@ -1,5 +1,5 @@
+use chrono::{Date, NaiveDate, Utc};
 use inflector::Inflector;
-use chrono::{Date, NaiveDate ,Utc};
 use std::fmt;
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ pub struct Adr {
 #[derive(Clone, Copy, Debug)]
 pub enum Status {
     Accepted,
-    Proposed
+    Proposed,
 }
 
 impl fmt::Display for Status {
@@ -61,7 +61,7 @@ impl Adr {
 
         let status = status_from_content(&content);
 
-        Ok(Some(Adr{
+        Ok(Some(Adr {
             index: index.to_owned(),
             content,
             title,
@@ -115,6 +115,6 @@ fn status_from_content(content: &str) -> Option<Status> {
     match proposed_str {
         "Proposed" => Some(Status::Proposed),
         "Accepted" => Some(Status::Accepted),
-        _ => None
+        _ => None,
     }
 }

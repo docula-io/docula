@@ -1,5 +1,5 @@
-use std::error::Error;
 use assert_cmd::Command;
+use std::error::Error;
 
 #[test]
 fn test_adr_init() -> Result<(), Box<dyn Error>> {
@@ -70,7 +70,15 @@ fn test_adr_init_bad_index_type() -> Result<(), Box<dyn Error>> {
 
     Command::cargo_bin("docula")?
         .current_dir(tmp.path())
-        .args(["adr", "init", "foo/bar", "--name", "foobar", "--index-type", "foob"])
+        .args([
+            "adr",
+            "init",
+            "foo/bar",
+            "--name",
+            "foobar",
+            "--index-type",
+            "foob",
+        ])
         .assert()
         .failure();
 
@@ -79,14 +87,21 @@ fn test_adr_init_bad_index_type() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-
 #[test]
 fn test_adr_init_sequential_ordering() -> Result<(), Box<dyn Error>> {
     let tmp = tempdir::TempDir::new("adr_test")?;
 
     Command::cargo_bin("docula")?
         .current_dir(tmp.path())
-        .args(["adr", "init", "foo/bar", "--name", "foobar", "--index-type", "sequential"])
+        .args([
+            "adr",
+            "init",
+            "foo/bar",
+            "--name",
+            "foobar",
+            "--index-type",
+            "sequential",
+        ])
         .assert()
         .success();
 

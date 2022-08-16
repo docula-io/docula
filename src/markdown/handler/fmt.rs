@@ -1,17 +1,8 @@
-use clap::Args;
+pub struct Handler {}
 
-#[derive(Debug, Args)]
-pub struct FmtCmd {
-    path: std::path::PathBuf,
-    #[clap(short, long, help="Recursively search and fmt markdown")]
-    recursive: bool,
-    #[clap(long, help="Print the output without making it")]
-    dry_run: bool,
-}
-
-impl FmtCmd {
-    pub fn handle(self) -> Result<(), Box<dyn std::error::Error>> {
-        let path = std::env::current_dir()?.join(&self.path).canonicalize()?;
+impl Handler {
+    pub fn handle(self, path: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+        let path = std::env::current_dir()?.join(path).canonicalize()?;
 
         if path.is_dir() {
             return self.scan_dir();
@@ -23,11 +14,11 @@ impl FmtCmd {
         }
     }
 
-    pub fn scan_dir(&self) -> Result<(), Box<dyn std::error::Error>> {
+    fn scan_dir(&self) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
 
-    pub fn fmt_file(&self, path: &std::path::PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    fn fmt_file(&self, path: &std::path::PathBuf) -> Result<(), Box<dyn std::error::Error>> {
         let contents = std::fs::read_to_string(&path)?;
 
         let contents = fix_line_length(&contents);
@@ -89,7 +80,7 @@ fn find_closest_space(line: &str, width: usize) -> Option<usize> {
             None => {
                 best_offset = Some(x);
                 Some(delta)
-            },
+            }
             Some(x) => {
                 if x > delta {
                     best_offset = Some(offset - 1);

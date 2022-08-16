@@ -1,37 +1,20 @@
-use clap::Args;
-use std::error::Error;
-use super::Directory;
+use crate::adr::{Directory, IndexType, Status};
 use chrono::Utc;
-
-#[derive(Debug, Args)]
-pub struct InitCmd {
-    #[clap(help = "The directory where the adrs will live")]
-    dir: std::path::PathBuf,
-    #[clap(short, long, value_parser, help = "The name that will be given to the adr directory")]
-    name: String,
-    #[clap(short, long, value_enum, default_value="timestamp")]
-    index_type: super::IndexType
-}
-
-impl InitCmd {
-    pub fn handle<T: InitHandler>(self, h: T) -> Result<(), Box<dyn Error>> {
-        h.handle_cmd(self)
-    }
-}
-
-pub trait InitHandler {
-    fn handle_cmd(&self, cmd: InitCmd) -> Result<(), Box<dyn Error>>;
-}
 
 pub struct Handler {}
 
-impl InitHandler for Handler {
-    fn handle_cmd(&self, cmd: InitCmd) -> Result<(), Box<dyn Error>> {
+impl Handler {
+    pub fn handle(
+        &self,
+        dir: &std::path::Path,
+        name: String,
+        index_type: IndexType,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let mut state = crate::state::State::load()?;
 
         let cwd = std::env::current_dir()?;
 
-        let adr_path = cwd.join(&cmd.dir);
+        let adr_path = cwd.join(dir);
 
         if !adr_path.exists() {
             std::fs::create_dir_all(&adr_path)?;
@@ -46,12 +29,13 @@ impl InitHandler for Handler {
 
         let parent_count = state.path.components().count();
 
-        let relative_path: std::path::PathBuf = canon_path.components().skip(parent_count).collect();
+        let relative_path: std::path::PathBuf =
+            canon_path.components().skip(parent_count).collect();
 
-        let dir = Directory{
+        let dir = Directory {
             path: relative_path,
-            name: cmd.name,
-            index: cmd.index_type,
+            name,
+            index: index_type,
             full_path: canon_path,
         };
 
@@ -62,9 +46,11 @@ impl InitHandler for Handler {
         state.save()?;
 
         let date = Utc::now().date();
+
         dir.create_adr(
-            "Record architecture decisions", 
-            date, super::Status::Accepted,
+            "Record architecture decisions",
+            date,
+            Status::Accepted,
             "We need to record the architectural decisions made on this project.",
             "We will use Architecture Decision Records, managed by \
             [Docula](https://github.com/docula-io/docula),\n\
@@ -77,7 +63,7 @@ impl InitHandler for Handler {
 
 fn path_is_parent(parent: &std::path::PathBuf, path: &std::path::PathBuf) -> bool {
     if path == parent {
-        return true
+        return true;
     }
 
     match path.parent() {

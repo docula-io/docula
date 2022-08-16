@@ -1,5 +1,5 @@
 use clap::ValueEnum;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, ValueEnum, Debug, Clone)]
 pub enum IndexType {

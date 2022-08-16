@@ -1,2 +1,1 @@
-pub mod command;
-mod fmt;
+pub mod handler;

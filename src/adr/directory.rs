@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
 use super::{Adr, IndexType, Status};
 use chrono::{Date, Utc};
 use inflector::Inflector;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Directory {
@@ -27,13 +27,20 @@ impl Directory {
     }
 
     pub fn create_adr(
-        &self, title: &str, date: Date<Utc>, status: Status, context: &str,
-        decision: &str, consequences: &str,
+        &self,
+        title: &str,
+        date: Date<Utc>,
+        status: Status,
+        context: &str,
+        decision: &str,
+        consequences: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let index = self.next_index()?;
 
         let filename = format!(
-            "{}-{}.md", index, title.trim().replace(' ', "-").to_lowercase(),
+            "{}-{}.md",
+            index,
+            title.trim().replace(' ', "-").to_lowercase(),
         );
 
         if !self.full_path.exists() {
@@ -51,7 +58,7 @@ impl Directory {
             {}\n\n\
             ## Consequences\n\n\
             {}\n",
-            title.to_title_case(), 
+            title.to_title_case(),
             date.format("%Y-%m-%d"),
             status,
             context,
@@ -89,14 +96,13 @@ impl Directory {
 
     fn index_from_entry(&self, entry: std::fs::DirEntry) -> Option<u32> {
         let adr = Adr::load(&entry.path()).ok()??;
-        
+
         match adr.index.parse::<u32>() {
             Ok(x) => Some(x),
             Err(_) => None,
         }
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -108,7 +114,7 @@ mod test {
     fn test_directory_index_timestamp() -> Result<(), Box<dyn Error>> {
         let tmp = tempdir::TempDir::new("dir_test")?;
 
-        let dir = Directory{
+        let dir = Directory {
             path: tmp.path().to_path_buf(),
             name: "foo".to_owned(),
             index: IndexType::Timestamp,
@@ -128,7 +134,7 @@ mod test {
     fn test_directory_index_sequential() -> Result<(), Box<dyn Error>> {
         let tmp = tempdir::TempDir::new("dir_test")?;
 
-        let dir = Directory{
+        let dir = Directory {
             path: tmp.path().to_path_buf(),
             name: "foo".to_owned(),
             index: IndexType::Sequential,
