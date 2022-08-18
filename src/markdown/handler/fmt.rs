@@ -68,34 +68,7 @@ fn split_line(line: &str, width: usize) -> Vec<&str> {
 }
 
 fn find_closest_space(line: &str, width: usize) -> Option<usize> {
-    let mut best: Option<usize> = None;
-    let mut best_offset: Option<usize> = None;
-    let mut offset: usize = 0;
-    let mut search = line;
-
-    while let Some(x) = search.find(' ') {
-        let delta = (((width + 1) as isize) - (x + offset) as isize).unsigned_abs();
-
-        best = match best {
-            None => {
-                best_offset = Some(x);
-                Some(delta)
-            }
-            Some(x) => {
-                if x > delta {
-                    best_offset = Some(offset - 1);
-                    Some(delta)
-                } else {
-                    Some(x)
-                }
-            }
-        };
-
-        offset = x + offset + 1;
-        search = search.split_at(x + 1).1;
-    }
-
-    best_offset
+    line[..width].rfind(' ').or_else(|| line[width..].find(' ').map(|x| x + width))
 }
 
 #[cfg(test)]
