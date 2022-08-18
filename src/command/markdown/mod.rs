@@ -1,4 +1,5 @@
 mod fmt;
+mod lint;
 
 use clap::{Args, Subcommand};
 
@@ -13,6 +14,7 @@ impl Markdown {
     pub fn handle(self) -> Result<(), Box<dyn std::error::Error>> {
         match self.command {
             Command::Fmt(x) => x.handle(),
+            Command::Lint(x) => x.handle(),
         }
     }
 }
@@ -20,4 +22,5 @@ impl Markdown {
 #[derive(Debug, Subcommand)]
 enum Command {
     Fmt(fmt::FmtArgs),
+    Lint(lint::LintArgs),
 }
