@@ -33,11 +33,13 @@ fn fix_line_length(s: &str) -> String {
     let mut in_code_block = false;
 
     for line in s.lines() {
+        let is_table = line.starts_with("|");
+
         if line.starts_with("```") {
             in_code_block = !in_code_block;
         }
 
-        if !in_code_block {
+        if !in_code_block && !is_table {
             res.push_str(&split_line(line, 80).join("\n"));
         } else {
             res.push_str(line);
