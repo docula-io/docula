@@ -86,22 +86,33 @@ fn find_links(content: &str) -> Vec<FoundLink> {
 mod test {
     use super::*;
 
-    #[test]
-    fn test_finding_links() {
-        let text = "Hello, world [foo](https://bar.com)";
+    macro_rules! find_links_tests {
+        ($($name:ident: $value:expr,)*) => {
+            $(
+                #[test]
+                fn $name() {
+                    let (input, expected) = $value;
+                    assert_eq!(expected, find_links(input))
+                }
+            )*
+        }
+    }
 
-        let res = find_links(text);
-
-        let expected = FoundLink{
+    find_links_tests! {
+        single_hyperlink: ("Hello, world [foo](https://bar.com)", vec![FoundLink{
             start: 13,
             end: 35,
             link: LinkType::Url(Url::parse("https://bar.com").unwrap()),
             content: ContentType::HyperLink("foo"),
-        };
-
-        assert!(res.get(0).is_some());
-
-        let res = res.get(0).unwrap();
-        assert_eq!(res, &expected);
+        }]),
+        single_imagelink: (
+            "Hey, this image is great! ![Alt text](https://imgy.io/image.png) Cool!",
+            vec![FoundLink{
+                start: 26,
+                end: 64,
+                link: LinkType::Url(Url::parse("https://imgy.io/image.png").unwrap()),
+                content: ContentType::Image("Alt text"),
+            }]
+        ),
     }
 }
