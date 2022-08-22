@@ -270,6 +270,7 @@ dependencies = [
  "assert_fs",
  "chrono",
  "clap",
+ "lazy_static",
  "ordinal",
  "rayon",
  "regex",
