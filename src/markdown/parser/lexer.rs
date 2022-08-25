@@ -7,6 +7,9 @@ lazy_static! {
     static ref SETEX_HEADING_1_REGEX: Regex = Regex::new(r"^\s*={2,}\s*$").unwrap();
     static ref SETEX_HEADING_2_REGEX: Regex = Regex::new(r"^\s*-{2,}\s*$").unwrap();
     static ref CODE_BLOCK_REGEX: Regex = Regex::new(r"^\s*```\s*$").unwrap();
+    static ref CODE_BLOCK_INDENT_REGEX: Regex = Regex::new("r^$").unwrap();
+    static ref QUOTE_BLOCK_REGEX: Regex = Regex::new(r"^\s{0,3}>\s?(.*?)\s*$").unwrap();
+    static ref QUOTE_BLOCK_CLEAN_REGEX: Regex = Regex::new(r"^\s{0,3}(>\s?)?(.*?)\s*$").unwrap();
 }
 
 pub fn lex_analysis(input: &str) -> token::Document {
@@ -28,6 +31,12 @@ pub fn lex_analysis(input: &str) -> token::Document {
         }
 
         if let Some(x) = code_block(line, num, &lines) {
+            document.push(x.0);
+            skip += x.1 + 1;
+            continue
+        }
+
+        if let Some(x) = quote_block(line, num, &lines) {
             document.push(x.0);
             skip += x.1 + 1;
             continue
@@ -105,6 +114,60 @@ fn code_block(line: &str, num: usize, lines: &Vec<&str>) -> Option<(token::Block
             content: lines.join("\n"), 
         }
     }, lines.len()))
+}
+
+fn fix_indent(doc: &mut token::Document, line_num: usize, indents: &Vec<usize>) {
+    doc.iter_mut().for_each(|x| {
+        x.line_start += line_num;
+
+        match &mut x.token {
+            token::Block::Heading { content, .. } => {
+                content.iter_mut().for_each(|x| {
+                    x.position += indents[x.line_start];
+                    x.line_start += line_num;
+                })
+            },
+            token::Block::BlockQuote(x) => {
+                fix_indent(x, line_num, indents)
+            }
+            _ => ()
+        }
+    });
+}
+
+fn quote_block(line: &str, num: usize, lines: &Vec<&str>) -> Option<(token::BlockToken, usize)> {
+    if !QUOTE_BLOCK_REGEX.is_match(line) {
+        return None
+    }
+
+    let lines = lines[num..].iter()
+        .take_while(|x| !x.is_empty())
+        .map(|x| x.clone().to_string())
+        .collect::<Vec<String>>();
+
+    let fixed_lines = lines.iter().map(|x| {
+        match QUOTE_BLOCK_CLEAN_REGEX.captures(&x) {
+            None => x.clone(),
+            Some(caps) => caps.get(2).map_or(x.clone(), |x| x.as_str().to_string()),
+        }
+    }).collect::<Vec<String>>();
+
+    let indents = lines.iter().enumerate().map(|(i, x)| {
+        let fixed = &fixed_lines[i];
+        x.len() - fixed.len()
+    }).collect::<Vec<usize>>();
+    
+    let mut document = lex_analysis(&fixed_lines.join("\n"));
+
+    fix_indent(&mut document, num, &indents);
+
+
+    return Some((
+        token::BlockToken{
+            line_start: num,
+            token: token::Block::BlockQuote(document),
+        }, lines.len(),
+    ))
 }
 
 fn get_content(s: &str, line: usize, position: usize) -> token::Text {
@@ -250,7 +313,7 @@ mod test {
     fn test_code_block_with_heading() {
         let input = "```\n\tint x = 0;\n\tx + 5;\n```\n## Foo";
 
-        let expected : token::Document = vec![
+        let expected: token::Document = vec![
             token::BlockToken{
                 line_start: 0,
                 token: token::Block::BlockCode {
@@ -274,6 +337,71 @@ mod test {
 
         let result = lex_analysis(input);
 
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    fn test_block_quote() {
+        let input = "> # Foo";
+        let expected = vec![
+            token::BlockToken{
+                line_start: 0,
+                token: token::Block::BlockQuote(
+                    vec![
+                        token::BlockToken {
+                            line_start: 0,
+                            token: token::Block::Heading{
+                                level: 1,
+                                content: vec![token::InlineToken{
+                                    line_start: 0,
+                                    position: 4,
+                                    token: token::Inline::Chunk("Foo".to_string()),
+                                }],
+                                style: token::HeadingStyle::Atx,
+                            },
+                        }
+                    ],
+                ),
+            }
+        ];
+
+        let result = lex_analysis(input);
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    fn test_block_quote_multi_line() {
+        let input = "\n\n\n> > # Foo";
+        let expected = vec![
+            token::BlockToken{
+                line_start: 3,
+                token: token::Block::BlockQuote(
+                    vec![
+                        token::BlockToken{
+                            line_start: 3,
+                            token: token::Block::BlockQuote(
+                                vec![
+                                    token::BlockToken {
+                                        line_start: 3,
+                                        token: token::Block::Heading{
+                                            level: 1,
+                                            content: vec![token::InlineToken{
+                                                line_start: 3,
+                                                position: 6,
+                                                token: token::Inline::Chunk("Foo".to_string()),
+                                            }],
+                                            style: token::HeadingStyle::Atx,
+                                        },
+                                    }
+                                ]
+                            ),
+                        }
+                    ],
+                ),
+            }
+        ];
+
+        let result = lex_analysis(input);
         assert_eq!(expected, result);
     }
 }
